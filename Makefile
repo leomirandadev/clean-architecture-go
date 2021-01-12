@@ -1,6 +1,6 @@
 
-# VERSION = $(shell git branch --show-current)
-# DB_CONNECTION = "mmuser:@(:3306)/?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s"
+VERSION = $(shell git branch --show-current)
+DB_CONNECTION = "root:root@(127.0.0.1:3306)/golang_mysql?charset=utf8\u0026readTimeout=30s\u0026writeTimeout=30s&parseTime=true&loc=Local"
 init:
 	export DB_HOST_MYSQL=127.0.0.1:3306 \
 	export DB_USER_MYSQL=root \
