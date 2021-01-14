@@ -18,23 +18,23 @@ func NewMuxRouter() Router {
 	return &muxRouter{}
 }
 
-func (*muxRouter) POST(uri string, f func(w http.ResponseWriter, r *http.Request)) {
+func (*muxRouter) POST(uri string, f http.HandlerFunc) {
 	muxDispatcher.HandleFunc(uri, f).Methods("POST")
 }
 
-func (*muxRouter) GET(uri string, f func(w http.ResponseWriter, r *http.Request)) {
+func (*muxRouter) GET(uri string, f http.HandlerFunc) {
 	muxDispatcher.HandleFunc(uri, f).Methods("GET")
 }
 
-func (*muxRouter) PUT(uri string, f func(w http.ResponseWriter, r *http.Request)) {
+func (*muxRouter) PUT(uri string, f http.HandlerFunc) {
 	muxDispatcher.HandleFunc(uri, f).Methods("PUT")
 }
 
-func (*muxRouter) PATCH(uri string, f func(w http.ResponseWriter, r *http.Request)) {
+func (*muxRouter) PATCH(uri string, f http.HandlerFunc) {
 	muxDispatcher.HandleFunc(uri, f).Methods("PATCH")
 }
 
-func (*muxRouter) DELETE(uri string, f func(w http.ResponseWriter, r *http.Request)) {
+func (*muxRouter) DELETE(uri string, f http.HandlerFunc) {
 	muxDispatcher.HandleFunc(uri, f).Methods("DELETE")
 }
 
