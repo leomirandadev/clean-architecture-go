@@ -13,7 +13,7 @@ import (
 func ConfigHandlers(router httpRouter.Router, log logger.Logger, mid *middlewares.Middleware, tokenHasher token.TokenHash) {
 
 	var (
-		userRepo       repositories.UserRepository = repositories.NewGormRepository(log)
+		userRepo       repositories.UserRepository = repositories.NewSqlxRepository(log)
 		userService    services.UserService        = services.NewUserService(userRepo, log)
 		userController controllers.UserController  = controllers.NewUserController(userService, log, tokenHasher)
 	)

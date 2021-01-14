@@ -9,17 +9,13 @@ import (
 
 var mySigningKey = []byte("captainjacksparrowsayshi")
 
-type Output struct {
-	TOKEN string `json:"token"`
-}
-
 type jwtToken struct{}
 
 func NewJWT() TokenHash {
 	return &jwtToken{}
 }
 
-func (*jwtToken) Encrypt(data interface{}) (Output, error) {
+func (*jwtToken) Encrypt(data interface{}) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -30,15 +26,12 @@ func (*jwtToken) Encrypt(data interface{}) (Output, error) {
 
 	tokenString, err := token.SignedString(mySigningKey)
 
-	tokenOutput := Output{TOKEN: ""}
-
 	if err != nil {
 		fmt.Errorf("Something Went Wrong: %s", err.Error())
-		return tokenOutput, err
+		return "", err
 	}
 
-	tokenOutput.TOKEN = tokenString
-	return tokenOutput, nil
+	return tokenString, nil
 }
 
 func (*jwtToken) Decrypt(bearerToken string) (interface{}, error) {

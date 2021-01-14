@@ -1,6 +1,6 @@
 package token
 
 type TokenHash interface {
-	Encrypt(data interface{}) (Output, error)
+	Encrypt(data interface{}) (string, error)
 	Decrypt(bearerToken string) (interface{}, error)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/leomirandadev/clean-architecture-go/entities"
 	"github.com/leomirandadev/clean-architecture-go/services"
-	"github.com/leomirandadev/clean-architecture-go/utils/hasher"
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
 	"github.com/leomirandadev/clean-architecture-go/utils/token"
 )
@@ -46,29 +45,28 @@ func (ctr *controllers) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctr *controllers) Auth(w http.ResponseWriter, r *http.Request) {
-	var newUser entities.User
-	json.NewDecoder(r.Body).Decode(&newUser)
+	var userLogin entities.UserAuth
+	json.NewDecoder(r.Body).Decode(&userLogin)
 
-	hasherBcrypt := hasher.NewBcryptHasher()
-	passwordHashed, errHash := hasherBcrypt.Generate(newUser.Password)
+	userFound, err := ctr.userService.GetUserByLogin(userLogin)
 
-	if errHash != nil {
-		ctr.log.Error("Ctrl.Auth: ", "Error generate hash password: ", newUser)
+	if err != nil {
+		ctr.log.Error("Ctrl.Auth: ", "Error on find a user", userLogin)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	newUser.Password = passwordHashed
-	err := ctr.userService.New(newUser)
+	token, err := ctr.token.Encrypt(userFound)
 
 	if err != nil {
-		ctr.log.Error("Ctrl.Auth: ", "Error on create user: ", newUser)
-		w.WriteHeader(http.StatusBadRequest)
+		ctr.log.Error("Ctrl.Auth: ", "Error on generate token", userLogin)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newUser)
+	json.NewEncoder(w).Encode(entities.Response{Token: token})
+
 }
 
 func (ctr *controllers) GetByID(w http.ResponseWriter, r *http.Request) {

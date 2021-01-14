@@ -27,21 +27,36 @@ func (repo *repoGorm) Create(newUser entities.User) error {
 	db := configs.ConnectGorm()
 	defer db.Close()
 
-	db.Create(&newUser)
+	db.Table("users").Create(&newUser)
 
 	return db.Error
 }
 
-func (repo *repoGorm) GetByID(ID int64) ([]entities.User, error) {
+func (repo *repoGorm) GetUserByEmail(userLogin entities.UserAuth) ([]entities.User, error) {
 	db := configs.ConnectGorm()
 	defer db.Close()
 
 	var user []entities.User
-	db.Where("ID = ?", ID).Find(&user)
+	db.Table("users").Where("email = ?", userLogin.Email).Find(&user)
+
+	if db.Error != nil {
+		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", userLogin, db.Error)
+		return nil, errors.New("Usuário não encontrado")
+	}
+
+	return user, nil
+}
+
+func (repo *repoGorm) GetByID(ID int64) ([]entities.UserResponse, error) {
+	db := configs.ConnectGorm()
+	defer db.Close()
+
+	var user []entities.UserResponse
+	db.Table("users").Where("ID = ?", ID).Find(&user)
 
 	if db.Error != nil {
 		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", ID, db.Error)
-		return []entities.User{}, errors.New("Usuário não encontrado")
+		return nil, errors.New("Usuário não encontrado")
 	}
 
 	return user, nil
