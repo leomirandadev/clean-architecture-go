@@ -33,16 +33,6 @@ func (ctr *controllers) Create(w http.ResponseWriter, r *http.Request) {
 	var newUser entities.User
 	json.NewDecoder(r.Body).Decode(&newUser)
 
-	hasherBcrypt := hasher.NewBcryptHasher()
-	passwordHashed, errHash := hasherBcrypt.Generate(newUser.Password)
-
-	if errHash != nil {
-		ctr.log.Error("Ctrl.Create: ", "Error generate hash password: ", newUser)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	newUser.Password = passwordHashed
 	err := ctr.userService.New(newUser)
 
 	if err != nil {

@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/leomirandadev/clean-architecture-go/entities"
 	repositories "github.com/leomirandadev/clean-architecture-go/repositories/user"
+	"github.com/leomirandadev/clean-architecture-go/utils/hasher"
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
 )
 
@@ -21,6 +22,15 @@ func NewUserService(userRepository repositories.UserRepository, log logger.Logge
 }
 
 func (srv *services) New(newUser entities.User) error {
+	hasherBcrypt := hasher.NewBcryptHasher()
+	passwordHashed, errHash := hasherBcrypt.Generate(newUser.Password)
+
+	if errHash != nil {
+		srv.log.Error("Ctrl.Create: ", "Error generate hash password: ", newUser)
+		return errHash
+	}
+
+	newUser.Password = passwordHashed
 	return srv.repositories.Create(newUser)
 }
 
