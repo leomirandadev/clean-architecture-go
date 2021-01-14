@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"fmt"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -13,6 +14,7 @@ func ConnectGorm() *gorm.DB {
 	var user string = os.Getenv("DB_USER_MYSQL")
 	var password string = os.Getenv("DB_PASSWORD_MYSQL")
 	var dbname string = os.Getenv("DB_NAME_MYSQL")
+	fmt.Println(user + ":" + password + "@(" + host + ")/" + dbname + "?charset=utf8\u0026readTimeout=30s\u0026writeTimeout=30s&parseTime=true&loc=Local")
 
 	db, err := gorm.Open("mysql", user+":"+password+"@("+host+")/"+dbname+"?charset=utf8\u0026readTimeout=30s\u0026writeTimeout=30s&parseTime=true&loc=Local")
 
