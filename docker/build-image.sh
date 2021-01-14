@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME=$1
+NAME=clean-rchitecture-go/$1
 VERSION=$2
 DB_HOST_MYSQL=$3
 DB_USER_MYSQL=$4
