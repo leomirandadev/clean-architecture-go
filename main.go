@@ -15,5 +15,5 @@ func main() {
 
 	handlers.ConfigHandlers(router, log, tokenHasher)
 
-	router.SERVE(":80")
+	router.SERVE(":8080")
 }
