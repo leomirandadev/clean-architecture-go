@@ -1,4 +1,4 @@
-package controllers
+package user
 
 import (
 	"encoding/json"
@@ -13,9 +13,9 @@ import (
 )
 
 type controllers struct {
-	userService services.UserService
-	log         logger.Logger
-	token       token.TokenHash
+	srv   *services.Container
+	log   logger.Logger
+	token token.TokenHash
 }
 
 type UserController interface {
@@ -24,15 +24,15 @@ type UserController interface {
 	GetByID(w http.ResponseWriter, r *http.Request)
 }
 
-func NewUserController(userService services.UserService, log logger.Logger, tokenHasher token.TokenHash) UserController {
-	return &controllers{userService: userService, log: log, token: tokenHasher}
+func New(srv *services.Container, log logger.Logger, tokenHasher token.TokenHash) UserController {
+	return &controllers{srv: srv, log: log, token: tokenHasher}
 }
 
 func (ctr *controllers) Create(w http.ResponseWriter, r *http.Request) {
 	var newUser entities.User
 	json.NewDecoder(r.Body).Decode(&newUser)
 
-	err := ctr.userService.New(newUser)
+	err := ctr.srv.User.Create(newUser)
 
 	if err != nil {
 		ctr.log.Error("Ctrl.Create: ", "Error on create user: ", newUser)
@@ -48,7 +48,7 @@ func (ctr *controllers) Auth(w http.ResponseWriter, r *http.Request) {
 	var userLogin entities.UserAuth
 	json.NewDecoder(r.Body).Decode(&userLogin)
 
-	userFound, err := ctr.userService.GetUserByLogin(userLogin)
+	userFound, err := ctr.srv.User.GetUserByLogin(userLogin)
 
 	if err != nil {
 		ctr.log.Error("Ctrl.Auth: ", "Error on find a user", userLogin)
@@ -66,13 +66,12 @@ func (ctr *controllers) Auth(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(entities.Response{Token: token})
-
 }
 
 func (ctr *controllers) GetByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	idUser, _ := strconv.ParseInt(params["id"], 10, 64)
-	user, err := ctr.userService.GetByID(idUser)
+	user, err := ctr.srv.User.GetByID(idUser)
 
 	if err != nil {
 		ctr.log.Error("Ctrl.GetByid: ", "Error get user by id: ", idUser)

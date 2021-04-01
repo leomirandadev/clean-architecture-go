@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/leomirandadev/clean-architecture-go/controllers"
 	"github.com/leomirandadev/clean-architecture-go/handlers/middlewares"
 	"github.com/leomirandadev/clean-architecture-go/handlers/users"
 	"github.com/leomirandadev/clean-architecture-go/utils/httpRouter"
@@ -8,8 +9,16 @@ import (
 	"github.com/leomirandadev/clean-architecture-go/utils/token"
 )
 
-func ConfigHandlers(router httpRouter.Router, log logger.Logger, tokenHasher token.TokenHash) {
+type Options struct {
+	Ctrl   *controllers.Container
+	Router httpRouter.Router
+	Log    logger.Logger
+	Token  token.TokenHash
+}
 
-	mid := middlewares.New(tokenHasher)
-	users.ConfigHandlers(router, log, mid, tokenHasher)
+func New(opts Options) {
+
+	mid := middlewares.New(opts.Token)
+	users.New(mid, opts.Router, opts.Ctrl)
+
 }
