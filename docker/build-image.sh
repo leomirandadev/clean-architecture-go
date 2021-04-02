@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME=clean-rchitecture-go/$1
+NAME=clean-architecture-go/$1
 VERSION=$2
 DB_CONNECTION=$3
 CACHE_URL=$4
