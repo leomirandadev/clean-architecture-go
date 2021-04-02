@@ -19,12 +19,6 @@ func NewGormRepository(log logger.Logger, writer, reader *gorm.DB) UserRepositor
 	return &repoGorm{log: log}
 }
 
-func (repo *repoGorm) Migrate() {
-	defer repo.writer.Close()
-
-	repo.writer.AutoMigrate(&entities.User{})
-}
-
 func (repo *repoGorm) Create(ctx context.Context, newUser entities.User) error {
 	defer repo.writer.Close()
 

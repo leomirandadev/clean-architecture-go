@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
@@ -72,11 +73,32 @@ func (m *middlewareJWT) VerifyRoles(r *http.Request, logged bool, roles ...strin
 		return errors.New("INVALID_AUTHORIZATION")
 	}
 
-	_, err := m.token.Decrypt(bearerSplited[1])
+	token, err := m.token.Decrypt(bearerSplited[1])
 
 	if err != nil {
-		return errors.New("UNAUTHORIZED")
+		m.log.Error(err)
+		return err
 	}
 
-	return nil
+	tokenMap, ok := token.(map[string]interface{})
+	if !ok {
+		return errors.New("INVALID_AUTHORIZATION")
+	}
+
+	for _, role := range roles {
+		if tokenMap["role"] == role {
+			m.InsertTokenFieldsOnPayload(tokenMap, r)
+			return nil
+		}
+	}
+
+	return errors.New("UNAUTHORIZED")
+}
+
+func (m *middlewareJWT) InsertTokenFieldsOnPayload(token map[string]interface{}, r *http.Request) {
+	r.Header.Add("payload_id", strconv.FormatInt(int64(token["id"].(float64)), 10))
+	r.Header.Add("payload_name", token["name"].(string))
+	r.Header.Add("payload_nick_name", token["nick_name"].(string))
+	r.Header.Add("payload_email", token["email"].(string))
+	r.Header.Add("payload_role", token["role"].(string))
 }

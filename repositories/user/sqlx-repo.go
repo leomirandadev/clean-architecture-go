@@ -19,14 +19,10 @@ func NewSqlxRepository(log logger.Logger, writer, reader *sqlx.DB) UserRepositor
 	return &repoSqlx{log: log, writer: writer, reader: reader}
 }
 
-func (repo *repoSqlx) Migrate() {
-	return
-}
-
 func (repo *repoSqlx) Create(ctx context.Context, newUser entities.User) error {
 
 	_, err := repo.writer.ExecContext(ctx, `
-		INSERT INTO users (nick_name,name,email,password) VALUES (:first,:last,:email)
+		INSERT INTO users (nick_name,name,email,password,role) VALUES (:nick_name,:name,:email,:password,:role)
 	`, newUser)
 
 	return err
@@ -42,6 +38,7 @@ func (repo *repoSqlx) GetByID(ctx context.Context, ID int64) ([]entities.UserRes
 			nick_name,
 			name,
 			email,
+			role,
 			created_at,
 			updated_at
 		FROM users 
@@ -66,6 +63,7 @@ func (repo *repoSqlx) GetUserByEmail(ctx context.Context, userLogin entities.Use
 			nick_name,
 			name,
 			email,
+			role,
 			password,
 			created_at,
 			updated_at
