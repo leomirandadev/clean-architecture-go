@@ -32,7 +32,8 @@ func (ctr *controllers) Create(w http.ResponseWriter, r *http.Request) {
 	var newUser entities.User
 	json.NewDecoder(r.Body).Decode(&newUser)
 
-	err := ctr.srv.User.Create(newUser)
+	ctx := r.Context()
+	err := ctr.srv.User.Create(ctx, newUser)
 
 	if err != nil {
 		ctr.log.Error("Ctrl.Create: ", "Error on create user: ", newUser)
@@ -48,7 +49,8 @@ func (ctr *controllers) Auth(w http.ResponseWriter, r *http.Request) {
 	var userLogin entities.UserAuth
 	json.NewDecoder(r.Body).Decode(&userLogin)
 
-	userFound, err := ctr.srv.User.GetUserByLogin(userLogin)
+	ctx := r.Context()
+	userFound, err := ctr.srv.User.GetUserByLogin(ctx, userLogin)
 
 	if err != nil {
 		ctr.log.Error("Ctrl.Auth: ", "Error on find a user", userLogin)
@@ -71,7 +73,9 @@ func (ctr *controllers) Auth(w http.ResponseWriter, r *http.Request) {
 func (ctr *controllers) GetByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	idUser, _ := strconv.ParseInt(params["id"], 10, 64)
-	user, err := ctr.srv.User.GetByID(idUser)
+
+	ctx := r.Context()
+	user, err := ctr.srv.User.GetByID(ctx, idUser)
 
 	if err != nil {
 		ctr.log.Error("Ctrl.GetByid: ", "Error get user by id: ", idUser)

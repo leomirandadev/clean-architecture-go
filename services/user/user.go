@@ -1,6 +1,8 @@
 package user
 
 import (
+	"context"
+
 	"github.com/leomirandadev/clean-architecture-go/entities"
 	"github.com/leomirandadev/clean-architecture-go/repositories"
 	"github.com/leomirandadev/clean-architecture-go/utils/hasher"
@@ -8,9 +10,9 @@ import (
 )
 
 type UserService interface {
-	Create(newUser entities.User) error
-	GetByID(ID int64) ([]entities.UserResponse, error)
-	GetUserByLogin(userLogin entities.UserAuth) (entities.UserResponse, error)
+	Create(ctx context.Context, newUser entities.User) error
+	GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error)
+	GetUserByLogin(ctx context.Context, userLogin entities.UserAuth) (entities.UserResponse, error)
 }
 
 type services struct {
@@ -22,7 +24,7 @@ func New(repo *repositories.Container, log logger.Logger) UserService {
 	return &services{repositories: repo, log: log}
 }
 
-func (srv *services) Create(newUser entities.User) error {
+func (srv *services) Create(ctx context.Context, newUser entities.User) error {
 	hasherBcrypt := hasher.NewBcryptHasher()
 	passwordHashed, errHash := hasherBcrypt.Generate(newUser.Password)
 
@@ -32,12 +34,12 @@ func (srv *services) Create(newUser entities.User) error {
 	}
 
 	newUser.Password = passwordHashed
-	return srv.repositories.User.Create(newUser)
+	return srv.repositories.User.Create(ctx, newUser)
 }
 
-func (srv *services) GetUserByLogin(userLogin entities.UserAuth) (entities.UserResponse, error) {
+func (srv *services) GetUserByLogin(ctx context.Context, userLogin entities.UserAuth) (entities.UserResponse, error) {
 
-	userFound, err := srv.repositories.User.GetUserByEmail(userLogin)
+	userFound, err := srv.repositories.User.GetUserByEmail(ctx, userLogin)
 
 	if err != nil || len(userFound) <= 0 {
 		srv.log.Error("Srv.Auth: ", "User not found", userFound)
@@ -60,6 +62,6 @@ func (srv *services) GetUserByLogin(userLogin entities.UserAuth) (entities.UserR
 	}, nil
 }
 
-func (srv *services) GetByID(ID int64) ([]entities.UserResponse, error) {
-	return srv.repositories.User.GetByID(ID)
+func (srv *services) GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error) {
+	return srv.repositories.User.GetByID(ctx, ID)
 }

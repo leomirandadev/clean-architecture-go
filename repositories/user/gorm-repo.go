@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 
 	"github.com/leomirandadev/clean-architecture-go/configs"
@@ -23,7 +24,7 @@ func (repo *repoGorm) Migrate() {
 	db.AutoMigrate(&entities.User{})
 }
 
-func (repo *repoGorm) Create(newUser entities.User) error {
+func (repo *repoGorm) Create(ctx context.Context, newUser entities.User) error {
 	db := configs.ConnectGorm()
 	defer db.Close()
 
@@ -32,7 +33,7 @@ func (repo *repoGorm) Create(newUser entities.User) error {
 	return db.Error
 }
 
-func (repo *repoGorm) GetUserByEmail(userLogin entities.UserAuth) ([]entities.User, error) {
+func (repo *repoGorm) GetUserByEmail(ctx context.Context, userLogin entities.UserAuth) ([]entities.User, error) {
 	db := configs.ConnectGorm()
 	defer db.Close()
 
@@ -47,7 +48,7 @@ func (repo *repoGorm) GetUserByEmail(userLogin entities.UserAuth) ([]entities.Us
 	return user, nil
 }
 
-func (repo *repoGorm) GetByID(ID int64) ([]entities.UserResponse, error) {
+func (repo *repoGorm) GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error) {
 	db := configs.ConnectGorm()
 	defer db.Close()
 
