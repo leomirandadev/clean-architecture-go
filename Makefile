@@ -2,19 +2,18 @@
 VERSION = $(shell git branch --show-current)
 NAME = $(shell echo $(CURRENTNAME) | sed 's/\(.\)\([A-Z]\)/\1-\2/g' | tr '[:upper:]' '[:lower:]')
 
-DB_HOST_MYSQL=127.0.0.1:3306
-DB_USER_MYSQL=root
-DB_PASSWORD_MYSQL=root
-DB_NAME_MYSQL=golang_mysql
+CACHE_URL=127.0.0.1:11211
+CACHE_EXP=0
+DB_CONNECTION = "root:root@(127.0.0.1:3306)/golang_mysql?charset=utf8\u0026readTimeout=30s\u0026writeTimeout=30s&parseTime=true&loc=Local"
 
 build: 
-	./docker/build-image.sh $(NAME) $(VERSION) $(DB_HOST_MYSQL) $(DB_USER_MYSQL) $(DB_PASSWORD_MYSQL) $(DB_NAME_MYSQL)
+	./docker/build-image.sh $(NAME) $(VERSION) $(DB_CONNECTION) $(CACHE_URL) $(CACHE_EXP)
 
 run:
-	DB_HOST_MYSQL=$(DB_HOST_MYSQL) DB_USER_MYSQL=$(DB_USER_MYSQL) DB_PASSWORD_MYSQL=$(DB_PASSWORD_MYSQL) DB_NAME_MYSQL=$(DB_NAME_MYSQL) VERSION=$(VERSION) go run main.go
+	DB_CONNECTION=$(DB_CONNECTION) CACHE_URL=$(CACHE_URL) CACHE_EXP=$(CACHE_EXP) VERSION=$(VERSION) go run main.go
 
 run-watch:
-	DB_HOST_MYSQL=$(DB_HOST_MYSQL) DB_USER_MYSQL=$(DB_USER_MYSQL) DB_PASSWORD_MYSQL=$(DB_PASSWORD_MYSQL) DB_NAME_MYSQL=$(DB_NAME_MYSQL) VERSION=$(VERSION) nodemon --exec go run main.go --signal SIGTERM
+	DB_CONNECTION=$(DB_CONNECTION) CACHE_URL=$(CACHE_URL) CACHE_EXP=$(CACHE_EXP) VERSION=$(VERSION) nodemon --exec go run main.go --signal SIGTERM
 
 mig-create: 
 	goose -dir ./migrations create $(MIG_NAME) sql 

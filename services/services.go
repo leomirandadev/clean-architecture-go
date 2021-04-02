@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/leomirandadev/clean-architecture-go/repositories"
 	"github.com/leomirandadev/clean-architecture-go/services/user"
+	"github.com/leomirandadev/clean-architecture-go/utils/cache"
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
 )
 
@@ -13,8 +14,9 @@ type Container struct {
 
 // Options struct de opções para a criação de uma instancia dos serviços
 type Options struct {
-	Repo *repositories.Container
-	Log  logger.Logger
+	Repo  *repositories.Container
+	Log   logger.Logger
+	Cache cache.Cache
 }
 
 // New cria uma nova instancia dos serviços
