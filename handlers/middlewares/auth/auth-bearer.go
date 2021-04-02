@@ -1,4 +1,4 @@
-package middlewares
+package auth
 
 import (
 	"encoding/json"
@@ -6,20 +6,23 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/leomirandadev/clean-architecture-go/utils/logger"
 	"github.com/leomirandadev/clean-architecture-go/utils/token"
 )
 
 type middlewareJWT struct {
 	token token.TokenHash
+	log   logger.Logger
 }
 
 type Response struct {
 	Message string `json:"message"`
 }
 
-func newAuthBearer(tokenHasher token.TokenHash) AuthMiddleware {
+func NewBearer(tokenHasher token.TokenHash, log logger.Logger) AuthMiddleware {
 	return &middlewareJWT{
 		token: tokenHasher,
+		log:   log,
 	}
 }
 
