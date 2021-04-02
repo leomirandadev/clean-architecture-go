@@ -4,44 +4,43 @@ import (
 	"context"
 	"errors"
 
-	"github.com/leomirandadev/clean-architecture-go/configs"
+	"github.com/jinzhu/gorm"
 	"github.com/leomirandadev/clean-architecture-go/entities"
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
 )
 
 type repoGorm struct {
-	log logger.Logger
+	log    logger.Logger
+	writer *gorm.DB
+	reader *gorm.DB
 }
 
-func NewGormRepository(log logger.Logger) UserRepository {
+func NewGormRepository(log logger.Logger, writer, reader *gorm.DB) UserRepository {
 	return &repoGorm{log: log}
 }
 
 func (repo *repoGorm) Migrate() {
-	db := configs.ConnectGorm()
-	defer db.Close()
+	defer repo.writer.Close()
 
-	db.AutoMigrate(&entities.User{})
+	repo.writer.AutoMigrate(&entities.User{})
 }
 
 func (repo *repoGorm) Create(ctx context.Context, newUser entities.User) error {
-	db := configs.ConnectGorm()
-	defer db.Close()
+	defer repo.writer.Close()
 
-	db.Table("users").Create(&newUser)
+	repo.writer.Table("users").Create(&newUser)
 
-	return db.Error
+	return repo.writer.Error
 }
 
 func (repo *repoGorm) GetUserByEmail(ctx context.Context, userLogin entities.UserAuth) ([]entities.User, error) {
-	db := configs.ConnectGorm()
-	defer db.Close()
+	defer repo.reader.Close()
 
 	var user []entities.User
-	db.Table("users").Where("email = ?", userLogin.Email).Find(&user)
+	repo.reader.Table("users").Where("email = ?", userLogin.Email).Find(&user)
 
-	if db.Error != nil {
-		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", userLogin, db.Error)
+	if repo.reader.Error != nil {
+		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", userLogin, repo.reader.Error)
 		return nil, errors.New("Usuário não encontrado")
 	}
 
@@ -49,14 +48,13 @@ func (repo *repoGorm) GetUserByEmail(ctx context.Context, userLogin entities.Use
 }
 
 func (repo *repoGorm) GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error) {
-	db := configs.ConnectGorm()
-	defer db.Close()
+	defer repo.reader.Close()
 
 	var user []entities.UserResponse
-	db.Table("users").Where("ID = ?", ID).Find(&user)
+	repo.reader.Table("users").Where("ID = ?", ID).Find(&user)
 
-	if db.Error != nil {
-		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", ID, db.Error)
+	if repo.reader.Error != nil {
+		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", ID, repo.reader.Error)
 		return nil, errors.New("Usuário não encontrado")
 	}
 

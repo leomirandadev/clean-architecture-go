@@ -7,16 +7,16 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func ConnectSqlx() *sqlx.DB {
-
+func GetReaderSqlx() *sqlx.DB {
 	var DB_CONNECTION string = os.Getenv("DB_CONNECTION")
+	reader := sqlx.MustConnect("mysql", DB_CONNECTION)
 
-	db, err := sqlx.Connect("mysql", DB_CONNECTION)
+	return reader
+}
 
-	if err != nil {
-		panic("failed to connect database")
-	}
+func GetWriterSqlx() *sqlx.DB {
+	var DB_CONNECTION string = os.Getenv("DB_CONNECTION")
+	writer := sqlx.MustConnect("mysql", DB_CONNECTION)
 
-	return db
-
+	return writer
 }

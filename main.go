@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/leomirandadev/clean-architecture-go/configs"
 	"github.com/leomirandadev/clean-architecture-go/controllers"
 	"github.com/leomirandadev/clean-architecture-go/handlers"
 	"github.com/leomirandadev/clean-architecture-go/repositories"
@@ -28,7 +29,13 @@ func main() {
 		Expiration: time.Duration(cacheExpiration),
 	}, log)
 
-	repo := repositories.New(repositories.Options{Log: log})
+	repo := repositories.New(repositories.Options{
+		Log:        log,
+		ReaderSqlx: configs.GetReaderSqlx(),
+		WriterSqlx: configs.GetWriterSqlx(),
+		ReaderGorm: configs.GetReaderGorm(),
+		WriterGorm: configs.GetWriterGorm(),
+	})
 
 	srv := services.New(services.Options{
 		Log:   log,

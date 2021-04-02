@@ -7,16 +7,24 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func ConnectGorm() *gorm.DB {
-
+func GetReaderGorm() *gorm.DB {
 	var DB_CONNECTION string = os.Getenv("DB_CONNECTION")
-
-	db, err := gorm.Open("mysql", DB_CONNECTION)
+	reader, err := gorm.Open("mysql", DB_CONNECTION)
 
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	return db
+	return reader
+}
 
+func GetWriterGorm() *gorm.DB {
+	var DB_CONNECTION string = os.Getenv("DB_CONNECTION")
+	writer, err := gorm.Open("mysql", DB_CONNECTION)
+
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	return writer
 }
