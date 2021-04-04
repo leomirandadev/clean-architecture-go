@@ -14,21 +14,13 @@ import (
 	"github.com/leomirandadev/clean-architecture-go/utils/cache"
 	"github.com/leomirandadev/clean-architecture-go/utils/httpRouter"
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
+	"github.com/leomirandadev/clean-architecture-go/utils/mail"
 	"github.com/leomirandadev/clean-architecture-go/utils/token"
 )
 
 func main() {
 
-	router := httpRouter.NewMuxRouter()
-	log := logger.NewLogrusLog()
-	tokenHasher := token.NewJWT()
-
-	cacheExpiration, _ := strconv.ParseInt(os.Getenv("CACHE_EXP"), 10, 64)
-
-	cacheStore := cache.NewMemcache(cache.Options{
-		URL:        os.Getenv("CACHE_URL"),
-		Expiration: time.Duration(cacheExpiration),
-	}, log)
+	router, log, tokenHasher, cacheStore, mailSMTP := toolsInit()
 
 	repo := repositories.New(repositories.Options{
 		Log:        log,
@@ -42,6 +34,7 @@ func main() {
 		Log:   log,
 		Repo:  repo,
 		Cache: cacheStore,
+		Mail:  mailSMTP,
 	})
 
 	ctrl := controllers.New(controllers.Options{
@@ -57,4 +50,30 @@ func main() {
 	})
 
 	router.SERVE(":8080")
+}
+
+func toolsInit() (httpRouter.Router, logger.Logger, token.TokenHash, cache.Cache, mail.MailSender) {
+
+	router := httpRouter.NewMuxRouter()
+	log := logger.NewLogrusLog()
+	tokenHasher := token.NewJWT()
+
+	mailSMTP := mail.NewSMTP(mail.SmtpConfigs{
+		UserSender:     "",
+		PasswordSender: "",
+		HostSender:     "",
+		NameSender:     "",
+		EmailSender:    "",
+		Port:           "",
+	})
+
+	cacheStore := cache.NewMemcache(cache.Options{
+		URL: os.Getenv("CACHE_URL"),
+		Expiration: func() time.Duration {
+			cacheExpiration, _ := strconv.ParseInt(os.Getenv("CACHE_EXP"), 10, 64)
+			return time.Duration(cacheExpiration)
+		}(),
+	}, log)
+
+	return router, log, tokenHasher, cacheStore, mailSMTP
 }

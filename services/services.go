@@ -5,6 +5,7 @@ import (
 	"github.com/leomirandadev/clean-architecture-go/services/user"
 	"github.com/leomirandadev/clean-architecture-go/utils/cache"
 	"github.com/leomirandadev/clean-architecture-go/utils/logger"
+	"github.com/leomirandadev/clean-architecture-go/utils/mail"
 )
 
 // Container modelo para exportação dos serviços instanciados
@@ -17,6 +18,7 @@ type Options struct {
 	Repo  *repositories.Container
 	Log   logger.Logger
 	Cache cache.Cache
+	Mail  mail.MailSender
 }
 
 // New cria uma nova instancia dos serviços
