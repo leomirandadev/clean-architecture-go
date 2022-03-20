@@ -8,7 +8,7 @@ The main goal of this project is create a structure to reuse that implement clea
 - Logger: Logrus;
 - Mailer: net/stmp (native of go);
 - token generator: JWT GO;
-- Data manipulator: Sqlx and Gorm;
+- DataBase manipulator: Sqlx and Gorm;
 
 ## Next Implementation
 - Tests: [Gomock](https://github.com/golang/mock)
@@ -16,6 +16,7 @@ The main goal of this project is create a structure to reuse that implement clea
 - Remote configuration: [Viper](https://github.com/spf13/viper);
 - Message Broker: [Nats.io](https://github.com/nats-io/nats.go) and [Kafka](https://github.com/confluentinc/confluent-kafka-go)
 - RPC layer: [GRPC](https://pkg.go.dev/google.golang.org/grpc);
+- DataBase manipulator: [mongodb](https://github.com/mongodb/mongo-go-driver)
 
 ## Minimum softwares
 - [Docker](https://docs.docker.com/desktop/)
