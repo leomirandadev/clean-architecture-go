@@ -27,29 +27,29 @@ func (repo *repoGorm) Create(ctx context.Context, newUser entities.User) error {
 	return repo.writer.Error
 }
 
-func (repo *repoGorm) GetUserByEmail(ctx context.Context, userLogin entities.UserAuth) ([]entities.User, error) {
+func (repo *repoGorm) GetUserByEmail(ctx context.Context, userLogin entities.UserAuth) (entities.User, error) {
 	defer repo.reader.Close()
 
-	var user []entities.User
-	repo.reader.Table("users").Where("email = ?", userLogin.Email).Find(&user)
+	var user entities.User
+	repo.reader.Table("users").Where("email = ?", userLogin.Email).First(&user)
 
 	if repo.reader.Error != nil {
 		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", userLogin, repo.reader.Error)
-		return nil, errors.New("Usuário não encontrado")
+		return user, errors.New("Usuário não encontrado")
 	}
 
 	return user, nil
 }
 
-func (repo *repoGorm) GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error) {
+func (repo *repoGorm) GetByID(ctx context.Context, ID int64) (entities.UserResponse, error) {
 	defer repo.reader.Close()
 
-	var user []entities.UserResponse
-	repo.reader.Table("users").Where("ID = ?", ID).Find(&user)
+	var user entities.UserResponse
+	repo.reader.Table("users").Where("ID = ?", ID).First(&user)
 
 	if repo.reader.Error != nil {
 		repo.log.Error("GormRepo.GetByID: ", "Error on get User ID: ", ID, repo.reader.Error)
-		return nil, errors.New("Usuário não encontrado")
+		return user, errors.New("Usuário não encontrado")
 	}
 
 	return user, nil

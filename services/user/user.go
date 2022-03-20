@@ -11,7 +11,7 @@ import (
 
 type UserService interface {
 	Create(ctx context.Context, newUser entities.User) error
-	GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error)
+	GetByID(ctx context.Context, ID int64) (entities.UserResponse, error)
 	GetUserByLogin(ctx context.Context, userLogin entities.UserAuth) (entities.UserResponse, error)
 }
 
@@ -41,27 +41,27 @@ func (srv *services) GetUserByLogin(ctx context.Context, userLogin entities.User
 
 	userFound, err := srv.repositories.User.GetUserByEmail(ctx, userLogin)
 
-	if err != nil || len(userFound) <= 0 {
+	if err != nil {
 		srv.log.Error("Srv.Auth: ", "User not found", userFound)
 		return entities.UserResponse{}, err
 	}
 
 	hasherBcrypt := hasher.NewBcryptHasher()
-	err = hasherBcrypt.Compare(userFound[0].Password, userLogin.Password)
+	err = hasherBcrypt.Compare(userFound.Password, userLogin.Password)
 	if err != nil {
 		return entities.UserResponse{}, err
 	}
 
 	return entities.UserResponse{
-		ID:        userFound[0].ID,
-		NickName:  userFound[0].NickName,
-		Name:      userFound[0].Name,
-		Email:     userFound[0].Email,
-		CreatedAt: userFound[0].CreatedAt,
-		UpdatedAt: userFound[0].UpdatedAt,
+		ID:        userFound.ID,
+		NickName:  userFound.NickName,
+		Name:      userFound.Name,
+		Email:     userFound.Email,
+		CreatedAt: userFound.CreatedAt,
+		UpdatedAt: userFound.UpdatedAt,
 	}, nil
 }
 
-func (srv *services) GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error) {
+func (srv *services) GetByID(ctx context.Context, ID int64) (entities.UserResponse, error) {
 	return srv.repositories.User.GetByID(ctx, ID)
 }

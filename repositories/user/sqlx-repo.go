@@ -28,9 +28,9 @@ func (repo *repoSqlx) Create(ctx context.Context, newUser entities.User) error {
 	return err
 }
 
-func (repo *repoSqlx) GetByID(ctx context.Context, ID int64) ([]entities.UserResponse, error) {
+func (repo *repoSqlx) GetByID(ctx context.Context, ID int64) (entities.UserResponse, error) {
 
-	var user []entities.UserResponse
+	var user entities.UserResponse
 
 	err := repo.reader.GetContext(ctx, &user, `
 		SELECT 
@@ -42,20 +42,21 @@ func (repo *repoSqlx) GetByID(ctx context.Context, ID int64) ([]entities.UserRes
 			created_at,
 			updated_at
 		FROM users 
-		WHERE id=?
+		WHERE id = ?
+		LIMIT 1
 	`, ID)
 
 	if err != nil {
 		repo.log.Error("SqlxRepo.GetByID", "Error on get User ID: ", ID, err)
-		return nil, errors.New("Usuário não encontrado")
+		return user, errors.New("Usuário não encontrado")
 	}
 
 	return user, nil
 
 }
 
-func (repo *repoSqlx) GetUserByEmail(ctx context.Context, userLogin entities.UserAuth) ([]entities.User, error) {
-	var user []entities.User
+func (repo *repoSqlx) GetUserByEmail(ctx context.Context, userLogin entities.UserAuth) (entities.User, error) {
+	var user entities.User
 
 	err := repo.reader.GetContext(ctx, &user, `
 		SELECT 
@@ -69,11 +70,12 @@ func (repo *repoSqlx) GetUserByEmail(ctx context.Context, userLogin entities.Use
 			updated_at
 		FROM users 
 		WHERE email = ?
+		LIMIT 1
 	`, userLogin.Email)
 
 	if err != nil {
 		repo.log.Error("SqlxRepo.GetByID", "Error on get User ID: ", userLogin, err)
-		return nil, errors.New("Usuário não encontrado")
+		return user, errors.New("Usuário não encontrado")
 	}
 
 	return user, nil
