@@ -12,12 +12,6 @@ func NewLogrusLog() Logger {
 	return &logrusLog{}
 }
 
-// func init() {
-// 	// log.SetFormatter(&log.JSONFormatter{})
-// 	logrus.SetOutput(os.Stdout)
-// 	logrus.SetLevel(logrus.InfoLevel)
-// }
-
 // Error exibe detalhes do erro
 func (*logrusLog) Error(args ...interface{}) {
 	logrus.Error(args...)
