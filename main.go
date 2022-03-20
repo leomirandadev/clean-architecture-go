@@ -8,7 +8,6 @@ import (
 	"github.com/leomirandadev/clean-architecture-go/configs"
 	"github.com/leomirandadev/clean-architecture-go/controllers"
 	"github.com/leomirandadev/clean-architecture-go/handlers"
-	"github.com/leomirandadev/clean-architecture-go/handlers/middlewares"
 	"github.com/leomirandadev/clean-architecture-go/repositories"
 	"github.com/leomirandadev/clean-architecture-go/services"
 	"github.com/leomirandadev/clean-architecture-go/utils/cache"
@@ -46,7 +45,8 @@ func main() {
 	handlers.New(handlers.Options{
 		Ctrl:   ctrl,
 		Router: router,
-		Mid:    middlewares.New(tokenHasher, log),
+		Log:    log,
+		Token:  tokenHasher,
 	})
 
 	router.SERVE(":8080")
