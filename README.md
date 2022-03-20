@@ -1,7 +1,7 @@
 # Clean Architecture in Golang
 The main goal of this project is create a structure to reuse that implement clean Architecture principals, allowed you change all the libraries and mock all de layers whenever you want.
 
-## What technologies it was implemented 
+## What technologies were implemented 
 - Cache: Redis and Memcached;
 - Hashing: Bcrypt;
 - Http Router: Mux;
@@ -10,7 +10,7 @@ The main goal of this project is create a structure to reuse that implement clea
 - token generator: JWT GO;
 - DataBase manipulator: Sqlx and Gorm;
 
-## Next Implementation
+## Next Implementations
 - Tests: [Gomock](https://github.com/golang/mock);
 - Router: [Gin](https://github.com/gin-gonic/gin);
 - Remote configuration: [Viper](https://github.com/spf13/viper);
