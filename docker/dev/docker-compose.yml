@@ -15,7 +15,25 @@ services:
       - "5432:5432"
     restart: unless-stopped
 
+  api:
+    depends_on:
+      - postgres
+    build:
+      context: ../../
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - TRACER_ENDPOINT=http://host.docker.internal:14268/api/traces
+      - DATABASE_READER=user=root password=root dbname=clean-architecture-go host=host.docker.internal port=5432 sslmode=disable
+      - DATABASE_WRITER=user=root password=root dbname=clean-architecture-go host=host.docker.internal port=5432 sslmode=disable
+    ports:
+      - "443:8080"
+      - "80:8080"
+
   jaeger:
+    depends_on: 
+      - api
     image: jaegertracing/all-in-one:latest
     ports:
       - "5775:5775/udp"
@@ -29,18 +47,5 @@ services:
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=9411
   
-  api:
-    image: clean-architecture-go
-    restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    environment:
-      - TRACER_ENDPOINT=http://host.docker.internal:14268/api/traces
-      - DATABASE_READER=user=root password=root dbname=clean-architecture-go host=host.docker.internal port=5432 sslmode=disable
-      - DATABASE_WRITER=user=root password=root dbname=clean-architecture-go host=host.docker.internal port=5432 sslmode=disable
-    ports:
-      - "443:8080"
-      - "80:8080"
-
 volumes:
   postgres:

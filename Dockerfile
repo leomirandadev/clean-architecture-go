@@ -1,5 +1,5 @@
 # build step
-FROM golang:1.21 AS base
+FROM golang:1.21-alpine AS base
 WORKDIR /app
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o api cmd/api/*.go 
