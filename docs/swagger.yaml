@@ -1,0 +1,340 @@
+definitions:
+  github_com_leomirandadev_clean-architecture-go_internal_models.AuthToken:
+    properties:
+      token:
+        type: string
+    type: object
+  github_com_leomirandadev_clean-architecture-go_internal_models.ChangePassword:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  github_com_leomirandadev_clean-architecture-go_internal_models.GoogleCallbackReq:
+    properties:
+      code:
+        type: string
+      state:
+        type: string
+    type: object
+  github_com_leomirandadev_clean-architecture-go_internal_models.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  github_com_leomirandadev_clean-architecture-go_internal_models.UserAuth:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  github_com_leomirandadev_clean-architecture-go_internal_models.UserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      nick_name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - nick_name
+    - password
+    type: object
+  github_com_leomirandadev_clean-architecture-go_internal_models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      nick_name:
+        type: string
+      photo_url:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error:
+    properties:
+      details: {}
+      message:
+        type: string
+    type: object
+  internal_handlers_health.Status:
+    properties:
+      details: {}
+      health:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/health:
+    get:
+      description: Health checker
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers_health.Status'
+      tags:
+      - health
+  /v1/users:
+    post:
+      consumes:
+      - application/json
+      description: Create one user
+      parameters:
+      - description: create new user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      tags:
+      - users
+  /v1/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get one user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
+  /v1/users/auth:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user
+      parameters:
+      - description: add user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.UserAuth'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.AuthToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      tags:
+      - users
+  /v1/users/auth/google/callback:
+    get:
+      consumes:
+      - application/json
+      description: Google SSO callback
+      parameters:
+      - description: google sso callback request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.GoogleCallbackReq'
+      - description: state
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.AuthToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      tags:
+      - users
+  /v1/users/auth/google/sigin:
+    get:
+      description: Google SSO redirect
+      responses:
+        "307":
+          description: Temporary Redirect
+      tags:
+      - users
+  /v1/users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get me
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
+  /v1/users/password:
+    put:
+      consumes:
+      - application/json
+      description: Change password passing the reset_password token
+      parameters:
+      - description: new password and token
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.ChangePassword'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      tags:
+      - users
+  /v1/users/password/reset:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint generate and send the token to user to allow reset
+        password
+      parameters:
+      - description: user details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_internal_models.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_leomirandadev_clean-architecture-go_pkg_customerr.Error'
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" before paste the token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

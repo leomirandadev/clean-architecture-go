@@ -1,7 +1,0 @@
-version: '3.4'
-services:
-  cedap:
-    image: clean-architecture-go/master
-    restart: always
-    ports:
-      - "8080:8080"
