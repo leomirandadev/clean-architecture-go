@@ -4,7 +4,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -21,27 +20,23 @@ import (
 )
 
 type Config struct {
-	Port string `mapstructure:"PORT"`
-	Env  string `mapstructure:"ENV"`
-
-	Tracer otel_jaeger.Options `mapstructure:"TRACER"`
+	Port            string              `mapstructure:"PORT"`
+	Env             string              `mapstructure:"ENV"`
+	Tracer          otel_jaeger.Options `mapstructure:"TRACER"`
+	JWT             token.Options       `mapstructure:"JWT"`
+	Mailing         mail.Options        `mapstructure:"MAILING"`
+	AppDeepLinkBase string              `mapstructure:"APP_DEEP_LINK_BASE"`
+	GoogleSSO       google.Options      `mapstructure:"GOOGLE_SSO"`
 
 	Database struct {
 		Reader string `mapstructure:"READER"`
 		Writer string `mapstructure:"WRITER"`
 	} `mapstructure:"DATABASE"`
 
-	JWT           string        `mapstructure:"JWT"`
-	JWTExpiration time.Duration `mapstructure:"JWT_EXPIRATION"`
-
-	Mailing mail.Options `mapstructure:"MAILING"`
-
-	AppDeepLinkBase string `mapstructure:"APP_DEEP_LINK_BASE"`
-
-	GoogleSSO google.Options `mapstructure:"GOOGLE_SSO"`
-
-	BasicAuthUser     string `mapstructure:"BASIC_AUTH_USER"`
-	BasicAuthPassword string `mapstructure:"BASIC_AUTH_PASSWORD"`
+	BasicAuth struct {
+		User     string `mapstructure:"USER"`
+		Password string `mapstructure:"PASSWORD"`
+	} `mapstructure:"BASIC_AUTH"`
 }
 
 // @securityDefinitions.apikey BearerAuth
@@ -72,8 +67,8 @@ func main() {
 		Srv:               srv,
 		Router:            tools.router,
 		Token:             tools.tokenizer,
-		BasicAuthUser:     cfg.BasicAuthUser,
-		BasicAuthPassword: cfg.BasicAuthPassword,
+		BasicAuthUser:     cfg.BasicAuth.User,
+		BasicAuthPassword: cfg.BasicAuth.Password,
 		AppDeepLinkBase:   cfg.AppDeepLinkBase,
 	})
 
@@ -89,13 +84,6 @@ type tools struct {
 }
 
 func toolsInit(cfg Config) tools {
-	router := httprouter.NewChiRouter()
-
-	tokenizer := token.NewJWT(cfg.JWT, cfg.JWTExpiration)
-
-	tr := tracer.New(otel_jaeger.NewCollector(cfg.Tracer))
-
-	mailing := mail.NewSMTP(cfg.Mailing)
 
 	slog.SetDefault(slog.New(
 		slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
@@ -104,13 +92,13 @@ func toolsInit(cfg Config) tools {
 		}),
 	))
 
-	googleSSO := google.New(cfg.GoogleSSO)
+	jaegerCollector := otel_jaeger.NewCollector(cfg.Tracer)
 
 	return tools{
-		router:    router,
-		tokenizer: tokenizer,
-		tr:        tr,
-		mailing:   mailing,
-		googleSSO: googleSSO,
+		router:    httprouter.NewChiRouter(),
+		tokenizer: token.NewJWT(cfg.JWT),
+		tr:        tracer.New(jaegerCollector),
+		mailing:   mail.NewSMTP(cfg.Mailing),
+		googleSSO: google.New(cfg.GoogleSSO),
 	}
 }

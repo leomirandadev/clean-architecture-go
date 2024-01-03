@@ -8,16 +8,16 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+func NewJWT(opts Options) TokenHash {
+	return &jwtToken{
+		key: []byte(opts.Key),
+		exp: opts.Expiration,
+	}
+}
+
 type jwtToken struct {
 	key []byte
 	exp time.Duration
-}
-
-func NewJWT(key string, exp time.Duration) TokenHash {
-	return &jwtToken{
-		key: []byte(key),
-		exp: exp,
-	}
 }
 
 func (j jwtToken) Encrypt(data any) (string, error) {
