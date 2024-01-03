@@ -38,8 +38,6 @@ type Config struct {
 
 	AppDeepLinkBase string `mapstructure:"APP_DEEP_LINK_BASE"`
 
-	ChatGPTApiKey string `mapstructure:"CHAT_GPT_API_KEY"`
-
 	GoogleSSO google.Options `mapstructure:"GOOGLE_SSO"`
 
 	BasicAuthUser     string `mapstructure:"BASIC_AUTH_USER"`
