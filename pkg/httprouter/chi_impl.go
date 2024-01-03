@@ -73,7 +73,7 @@ func doer(f HandlerFunc, w http.ResponseWriter, r *http.Request) {
 }
 
 func (r *chiRouter) SERVE(port string) {
-	fmt.Println("Online on http://localhost" + port)
+	fmt.Println("Online now in: http://localhost" + port)
 	log.Fatal(http.ListenAndServe(port, r.router))
 }
 

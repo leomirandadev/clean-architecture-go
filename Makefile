@@ -19,8 +19,6 @@ install:
 	@go mod tidy
 
 build: 
-	@echo $(NAME): Compilando o micro-serviço
-	@CGO_ENABLED=0 GOOS=linux go build -o dist/$(NAME)/api cmd/api/*.go 
 	@echo $(NAME): Construindo a imagem
 	@docker build --progress=plain -t $(NAME) .
 
