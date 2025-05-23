@@ -35,10 +35,10 @@ func New(opts Options) GoogleSSO {
 }
 
 type Options struct {
-	RedirectURL  string `mapstructure:"REDIRECT_URL"`
-	ClientID     string `mapstructure:"CLIENT_ID"`
-	ClientSecret string `mapstructure:"CLIENT_SECRET"`
-	RandomStr    string `mapstructure:"RANDOM_STR"`
+	RedirectURL  string `mapstructure:"REDIRECT_URL" validate:"required"`
+	ClientID     string `mapstructure:"CLIENT_ID" validate:"required"`
+	ClientSecret string `mapstructure:"CLIENT_SECRET" validate:"required"`
+	RandomStr    string `mapstructure:"RANDOM_STR" validate:"required"`
 }
 
 type googleImpl struct {

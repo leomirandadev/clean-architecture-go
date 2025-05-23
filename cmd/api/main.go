@@ -11,27 +11,30 @@ import (
 	"github.com/leomirandadev/clean-architecture-go/internal/repositories"
 	"github.com/leomirandadev/clean-architecture-go/internal/services"
 	"github.com/leomirandadev/clean-architecture-go/pkg/envs"
+	"github.com/leomirandadev/clean-architecture-go/pkg/healthcheck"
 	"github.com/leomirandadev/clean-architecture-go/pkg/httprouter"
 	"github.com/leomirandadev/clean-architecture-go/pkg/mail"
+	"github.com/leomirandadev/clean-architecture-go/pkg/slogtint"
 	"github.com/leomirandadev/clean-architecture-go/pkg/sso/google"
 	"github.com/leomirandadev/clean-architecture-go/pkg/token"
 	"github.com/leomirandadev/clean-architecture-go/pkg/tracer"
 	"github.com/leomirandadev/clean-architecture-go/pkg/tracer/otel_jaeger"
+	"github.com/leomirandadev/clean-architecture-go/pkg/validator"
 )
 
 type Config struct {
-	Port            string              `mapstructure:"PORT"`
-	Env             string              `mapstructure:"ENV"`
-	Tracer          otel_jaeger.Options `mapstructure:"TRACER"`
-	JWT             token.Options       `mapstructure:"JWT"`
-	Mailing         mail.Options        `mapstructure:"MAILING"`
-	AppDeepLinkBase string              `mapstructure:"APP_DEEP_LINK_BASE"`
-	GoogleSSO       google.Options      `mapstructure:"GOOGLE_SSO"`
+	Port               string              `mapstructure:"PORT" validate:"required"`
+	Env                string              `mapstructure:"ENV" validate:"required"`
+	Tracer             otel_jaeger.Options `mapstructure:"TRACER" validate:"required"`
+	JWT                token.Options       `mapstructure:"JWT" validate:"required"`
+	Mailing            mail.Options        `mapstructure:"MAILING" validate:"required"`
+	SSOBaseURLCallback string              `mapstructure:"SSO_BASE_URL_CALLBACK"`
+	GoogleSSO          google.Options      `mapstructure:"GOOGLE_SSO" validate:"required"`
 
 	Database struct {
-		Reader string `mapstructure:"READER"`
-		Writer string `mapstructure:"WRITER"`
-	} `mapstructure:"DATABASE"`
+		Reader string `mapstructure:"READER" validate:"required"`
+		Writer string `mapstructure:"WRITER" validate:"required"`
+	} `mapstructure:"DATABASE" validate:"required"`
 
 	BasicAuth struct {
 		User     string `mapstructure:"USER"`
@@ -49,12 +52,19 @@ func main() {
 		log.Fatal("cfg not loaded", err)
 	}
 
+	if err := validator.Validate(cfg); err != nil {
+		log.Fatal("missing required fields", err)
+	}
+
 	tools := toolsInit(cfg)
 	defer tools.tr.Close()
 
+	writeDBConn := sqlx.MustConnect("pgx", cfg.Database.Reader)
+	readDBConn := writeDBConn
+
 	repo := repositories.New(repositories.Options{
-		ReaderSqlx: sqlx.MustConnect("pgx", cfg.Database.Reader),
-		WriterSqlx: sqlx.MustConnect("pgx", cfg.Database.Writer),
+		ReaderSqlx: readDBConn,
+		WriterSqlx: writeDBConn,
 	})
 
 	srv := services.New(services.Options{
@@ -63,30 +73,36 @@ func main() {
 		GoogleSSO: tools.googleSSO,
 	})
 
+	tools.healthChecker.
+		Register("postgres_writer", writeDBConn.PingContext).
+		Register("postgres_reader", readDBConn.PingContext)
+
 	handlers.New(handlers.Options{
-		Srv:               srv,
-		Router:            tools.router,
-		Token:             tools.tokenizer,
-		BasicAuthUser:     cfg.BasicAuth.User,
-		BasicAuthPassword: cfg.BasicAuth.Password,
-		AppDeepLinkBase:   cfg.AppDeepLinkBase,
+		Srv:                srv,
+		Router:             tools.router,
+		Token:              tools.tokenizer,
+		BasicAuthUser:      cfg.BasicAuth.User,
+		BasicAuthPassword:  cfg.BasicAuth.Password,
+		SSOBaseURLCallback: cfg.SSOBaseURLCallback,
+		HealthChecker:      tools.healthChecker,
 	})
 
-	tools.router.SERVE(cfg.Port)
+	tools.router.Serve(cfg.Port)
 }
 
 type tools struct {
-	router    httprouter.Router
-	tokenizer token.TokenHash
-	tr        tracer.ITracer
-	mailing   mail.MailSender
-	googleSSO google.GoogleSSO
+	router        httprouter.Router
+	tokenizer     token.TokenHash
+	tr            tracer.ITracer
+	mailing       mail.MailSender
+	googleSSO     google.GoogleSSO
+	healthChecker healthcheck.Health
 }
 
 func toolsInit(cfg Config) tools {
 
 	slog.SetDefault(slog.New(
-		slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		slogtint.NewHandler(os.Stderr, &slogtint.Options{
 			AddSource: true,
 			Level:     slog.LevelDebug,
 		}),
@@ -95,10 +111,11 @@ func toolsInit(cfg Config) tools {
 	jaegerCollector := otel_jaeger.NewCollector(cfg.Tracer)
 
 	return tools{
-		router:    httprouter.NewChiRouter(),
-		tokenizer: token.NewJWT(cfg.JWT),
-		tr:        tracer.New(jaegerCollector),
-		mailing:   mail.NewSMTP(cfg.Mailing),
-		googleSSO: google.New(cfg.GoogleSSO),
+		router:        httprouter.NewChiRouter(),
+		tokenizer:     token.NewJWT(cfg.JWT),
+		tr:            tracer.New(jaegerCollector),
+		mailing:       mail.NewSMTP(cfg.Mailing),
+		googleSSO:     google.New(cfg.GoogleSSO),
+		healthChecker: healthcheck.New(),
 	}
 }

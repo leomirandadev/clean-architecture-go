@@ -10,11 +10,11 @@ docs:
 
 install: 
 	@echo "installing goose..."
-	@go install github.com/pressly/goose/v3/cmd/goose@latest
+	@go install github.com/pressly/goose/v3/cmd/goose@v3.19.2
 	@echo "installing swaggo..."
-	@go install github.com/swaggo/swag/cmd/swag@latest
+	@go install github.com/swaggo/swag/cmd/swag@v1.16.3
 	@echo "installing air (hot reaload)..."
-	@go install github.com/cosmtrek/air@latest
+	@go install github.com/cosmtrek/air@v1.51.0
 	@echo "downloading project dependencies..."
 	@go mod tidy
 

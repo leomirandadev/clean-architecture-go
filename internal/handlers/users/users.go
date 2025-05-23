@@ -19,12 +19,12 @@ func Init(
 	router httprouter.Router,
 	token token.TokenHash,
 	srv *services.Container,
-	appDeepLinkBase string,
+	ssoBaseURLCallback string,
 ) {
 	ctr := controllers{
 		srv,
 		token,
-		appDeepLinkBase,
+		ssoBaseURLCallback,
 	}
 
 	router.POST("/v1/users", mid.Auth.Public(ctr.Create))
@@ -38,9 +38,9 @@ func Init(
 }
 
 type controllers struct {
-	srv             *services.Container
-	token           token.TokenHash
-	appDeepLinkBase string
+	srv                *services.Container
+	token              token.TokenHash
+	ssoBaseURLCallback string
 }
 
 // user swagger document
@@ -289,7 +289,7 @@ func (ctr controllers) GoogleCallback(c httprouter.Context) error {
 	var (
 		w   = c.GetResponseWriter()
 		r   = c.GetRequestReader()
-		url = fmt.Sprintf("%s/sso-callback?token=%s", ctr.appDeepLinkBase, token)
+		url = fmt.Sprintf("%s?token=%s", ctr.ssoBaseURLCallback, token)
 	)
 
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)

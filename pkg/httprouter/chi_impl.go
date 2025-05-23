@@ -3,6 +3,7 @@ package httprouter
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 type chiRouter struct {
 	router *chi.Mux
+	server *http.Server
 }
 
 func NewChiRouter() Router {
@@ -22,31 +24,31 @@ func NewChiRouter() Router {
 	}
 }
 
-func (r *chiRouter) POST(uri string, f HandlerFunc) {
+func (r chiRouter) POST(uri string, f HandlerFunc) {
 	r.router.Post(uri, func(w http.ResponseWriter, r *http.Request) {
 		doer(f, w, r)
 	})
 }
 
-func (r *chiRouter) GET(uri string, f HandlerFunc) {
+func (r chiRouter) GET(uri string, f HandlerFunc) {
 	r.router.Get(uri, func(w http.ResponseWriter, r *http.Request) {
 		doer(f, w, r)
 	})
 }
 
-func (r *chiRouter) PUT(uri string, f HandlerFunc) {
+func (r chiRouter) PUT(uri string, f HandlerFunc) {
 	r.router.Put(uri, func(w http.ResponseWriter, r *http.Request) {
 		doer(f, w, r)
 	})
 }
 
-func (r *chiRouter) PATCH(uri string, f HandlerFunc) {
+func (r chiRouter) PATCH(uri string, f HandlerFunc) {
 	r.router.Patch(uri, func(w http.ResponseWriter, r *http.Request) {
 		doer(f, w, r)
 	})
 }
 
-func (r *chiRouter) DELETE(uri string, f HandlerFunc) {
+func (r chiRouter) DELETE(uri string, f HandlerFunc) {
 	r.router.Delete(uri, func(w http.ResponseWriter, r *http.Request) {
 		doer(f, w, r)
 	})
@@ -72,12 +74,26 @@ func doer(f HandlerFunc, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (r *chiRouter) SERVE(port string) {
+func (r *chiRouter) Serve(port string) {
 	fmt.Println("Online now in: http://localhost" + port)
-	log.Fatal(http.ListenAndServe(port, r.router))
+
+	r.server = &http.Server{
+		Addr:    port,
+		Handler: r.router,
+	}
+
+	log.Fatal(r.server.ListenAndServe())
 }
 
-func (m *chiRouter) ParseHandler(h http.HandlerFunc) HandlerFunc {
+func (r chiRouter) Shutdown(ctx context.Context) error {
+	if r.server == nil {
+		return errors.New("server not initialized")
+	}
+
+	return r.server.Shutdown(ctx)
+}
+
+func (m chiRouter) ParseHandler(h http.HandlerFunc) HandlerFunc {
 	return func(c Context) error {
 		h(c.GetResponseWriter(), c.GetRequestReader())
 		return nil

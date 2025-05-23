@@ -12,7 +12,8 @@ type Router interface {
 	DELETE(uri string, f HandlerFunc)
 	PATCH(uri string, f HandlerFunc)
 	ParseHandler(h http.HandlerFunc) HandlerFunc
-	SERVE(port string)
+	Serve(port string)
+	Shutdown(ctx context.Context) error
 }
 
 type HandlerFunc func(c Context) error

@@ -15,8 +15,8 @@ import (
 )
 
 type Options struct {
-	ServiceName string `json:"service_name" mapstructure:"service"`
-	EndpointURL string `json:"endpoint_url" mapstructure:"endpoint"`
+	ServiceName string `json:"service_name" mapstructure:"service" validate:"required"`
+	EndpointURL string `json:"endpoint_url" mapstructure:"endpoint" validate:"required"`
 	Username    string `json:"username" mapstructure:"username"`
 	Password    string `json:"password" mapstructure:"password"`
 	// Sample rate is expressed as 1/X where x is the population size.

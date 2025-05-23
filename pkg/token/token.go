@@ -8,6 +8,6 @@ type TokenHash interface {
 }
 
 type Options struct {
-	Key        string        `mapstructure:"KEY"`
-	Expiration time.Duration `mapstructure:"EXPIRATION"`
+	Key        string        `mapstructure:"KEY" validate:"required"`
+	Expiration time.Duration `mapstructure:"EXPIRATION" validate:"required"`
 }
